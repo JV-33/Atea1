@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AzureFunction
 {
@@ -16,13 +16,17 @@ namespace AzureFunction
         [FunctionName("GetLogs")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "logs")] HttpRequest req,
-            ILogger log,
-            ExecutionContext context)
+            ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string connectionString = "DefaultEndpointsProtocol=https;AccountName=jv33;AccountKey=zurohj+fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA+AStWU80+g==;EndpointSuffix=core.windows.net";
+            string connectionString = Environment.GetEnvironmentVariable("ConnectionString", EnvironmentVariableTarget.Process);
 
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                log.LogError("Invalid connection string provided.");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
 
             string fromTime = req.Query["fromTime"];
             string toTime = req.Query["toTime"];

@@ -3,7 +3,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Net.Http;
-using Azure;
 using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using Azure.Storage;
@@ -15,21 +14,22 @@ namespace AzureFunction
     public class AzureFunction
     {
         [FunctionName("FetchAndStoreDataFunction")]
-        public static async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, ILogger log, ExecutionContext context)
+        public static async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
-            string accountName = "jv33";
-            string accountKey = "zurohj+fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA+AStWU80+g==";
+            string accountName = Environment.GetEnvironmentVariable("AccountName");
+            string accountKey = Environment.GetEnvironmentVariable("AccountKey");
+            string tableAccountUrl = Environment.GetEnvironmentVariable("TableAccountUrl");
+            string blobAccountUrl = Environment.GetEnvironmentVariable("BlobAccountUrl");
+            string connectionString = Environment.GetEnvironmentVariable("ConnectionString");
 
-            string tableAccountUrl = $"https://{accountName}.table.core.windows.net";
-            string blobAccountUrl = $"https://{accountName}.blob.core.windows.net";
-
-            if (string.IsNullOrWhiteSpace(accountKey) || string.IsNullOrWhiteSpace(accountName))
+            if (string.IsNullOrWhiteSpace(accountName) || string.IsNullOrWhiteSpace(accountKey) || string.IsNullOrWhiteSpace(connectionString))
             {
                 log.LogError("Invalid storage account information provided.");
                 return;
             }
+
 
             var apiData = await FetchDataFromAPI();
 
@@ -92,6 +92,5 @@ namespace AzureFunction
 
             log.LogInformation($"Stored data to blob: {blobName}");
         }
-
     }
 }
