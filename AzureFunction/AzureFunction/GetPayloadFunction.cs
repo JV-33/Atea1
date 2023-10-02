@@ -4,7 +4,6 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -25,11 +24,10 @@ namespace AzureFunction
             log.LogInformation("C# HTTP trigger function processed a request.");
 
             string accountName = "jv33";
-            string accountKey = "zurohj + fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA + AStWU80 + g ==; // replace with your account key";
+            string accountKey = "zurohj+fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA+AStWU80+g==";
             string blobAccountUrl = $"https://{accountName}.blob.core.windows.net";
             string blobName = req.Query["blobName"];
             string containerName = "myblobcontainer"; 
-
 
             if (string.IsNullOrWhiteSpace(accountName) || string.IsNullOrWhiteSpace(accountKey) || string.IsNullOrWhiteSpace(containerName) || string.IsNullOrWhiteSpace(blobName))
             {

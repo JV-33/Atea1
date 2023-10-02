@@ -20,7 +20,8 @@ namespace AzureFunction
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
             string accountName = "jv33";
-            string accountKey = "zurohj + fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA + AStWU80 + g ==; // replace with your account key";
+            string accountKey = "zurohj+fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA+AStWU80+g==";
+
             string tableAccountUrl = $"https://{accountName}.table.core.windows.net";
             string blobAccountUrl = $"https://{accountName}.blob.core.windows.net";
 
@@ -52,18 +53,22 @@ namespace AzureFunction
 
         private static async Task LogDataToTableStorage(string tableAccountUrl, string accountName, string accountKey, string apiData, ILogger log)
         {
-            var serviceClient = new TableServiceClient(new Uri(tableAccountUrl), new StorageSharedKeyCredential(accountName, accountKey));
+            string connectionString = "DefaultEndpointsProtocol=https;AccountName=jv33;AccountKey=zurohj+fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA+AStWU80+g==;EndpointSuffix=core.windows.net";
+
+
+            var serviceClient = new TableServiceClient(connectionString);
+
 
             var client = serviceClient.GetTableClient("AteaHomework01");
 
             await client.CreateIfNotExistsAsync();
 
-            var entity = new TableEntity("somePartition", "someRowKey")
-    {
-        { "Data", apiData }
-    };
+            var entity = new TableEntity("somePartition", DateTime.UtcNow.Ticks.ToString())
+            {
+                { "Data", apiData }
+            };
 
-            await client.AddEntityAsync(entity);
+            await client.UpsertEntityAsync(entity, TableUpdateMode.Replace);
 
             log.LogInformation($"Logged data: {apiData}");
         }
@@ -75,7 +80,8 @@ namespace AzureFunction
 
             await containerClient.CreateIfNotExistsAsync();
 
-            string blobName = "myblobcontainer";
+            string blobName = $"myblob-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
 
             BlobClient blobClient = containerClient.GetBlobClient(blobName);
 

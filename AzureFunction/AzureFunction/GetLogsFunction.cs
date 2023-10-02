@@ -1,7 +1,6 @@
 ﻿using Azure.Data.Tables;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -22,7 +21,8 @@ namespace AzureFunction
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string connectionString = "DefaultEndpointsProtocol=https;AccountName=jv33;AccountKey=your_key;EndpointSuffix=core.windows.net";
+            string connectionString = "DefaultEndpointsProtocol=https;AccountName=jv33;AccountKey=zurohj+fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA+AStWU80+g==;EndpointSuffix=core.windows.net";
+
 
             string fromTime = req.Query["fromTime"];
             string toTime = req.Query["toTime"];
@@ -34,7 +34,6 @@ namespace AzureFunction
             List<YourEntity> logs = tableClient.Query<YourEntity>(filter).ToList();
 
             return new OkObjectResult(logs);
-
         }
     }
 }
