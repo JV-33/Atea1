@@ -46,7 +46,7 @@ namespace AzureFunction
         private static async Task<string> FetchDataFromAPI()
         {
             using HttpClient httpClient = new HttpClient();
-            var response = await httpClient.GetStringAsync("https://httpbin.org/get");
+            var response = await httpClient.GetStringAsync("https://api.publicapis.org/random?auth=null");
             return response;
         }
 
@@ -71,11 +71,11 @@ namespace AzureFunction
         private static async Task StoreDataToBlobStorage(string blobAccountUrl, string accountName, string accountKey, string apiData, ILogger log)
         {
             var blobServiceClient = new BlobServiceClient(new Uri(blobAccountUrl), new StorageSharedKeyCredential(accountName, accountKey));
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("your-container-name");
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("myblobcontainer");
 
             await containerClient.CreateIfNotExistsAsync();
 
-            string blobName = "your-blob-name";
+            string blobName = "myblobcontainer";
 
             BlobClient blobClient = containerClient.GetBlobClient(blobName);
 
