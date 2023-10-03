@@ -3,9 +3,10 @@
     "Values": {
         "AzureWebJobsStorage": "UseDevelopmentStorage=true",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-        
-    },
-    "ConnectionStrings": {
-        "StorageAccount": "DefaultEndpointsProtocol=https;AccountName=jv33;AccountKey=your_key;EndpointSuffix=core.windows.net"
+        "AccountName": "jv33",
+        "AccountKey": "zurohj+fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA+AStWU80+g==",
+        "TableAccountUrl": "https://jv33.table.core.windows.net",
+        "BlobAccountUrl": "https://jv33.blob.core.windows.net",
+        "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=jv33;AccountKey=zurohj+fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA+AStWU80+g==;EndpointSuffix=core.windows.net"
     }
 }

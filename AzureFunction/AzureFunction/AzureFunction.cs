@@ -3,7 +3,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Net.Http;
-using Azure;
 using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using Azure.Storage;
@@ -15,20 +14,22 @@ namespace AzureFunction
     public class AzureFunction
     {
         [FunctionName("FetchAndStoreDataFunction")]
-        public static async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, ILogger log, ExecutionContext context)
+        public static async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
-            string accountName = "jv33";
-            string accountKey = "zurohj + fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA + AStWU80 + g ==; // replace with your account key";
-            string tableAccountUrl = $"https://{accountName}.table.core.windows.net";
-            string blobAccountUrl = $"https://{accountName}.blob.core.windows.net";
+            string accountName = Environment.GetEnvironmentVariable("AccountName");
+            string accountKey = Environment.GetEnvironmentVariable("AccountKey");
+            string tableAccountUrl = Environment.GetEnvironmentVariable("TableAccountUrl");
+            string blobAccountUrl = Environment.GetEnvironmentVariable("BlobAccountUrl");
+            string connectionString = Environment.GetEnvironmentVariable("ConnectionString");
 
-            if (string.IsNullOrWhiteSpace(accountKey) || string.IsNullOrWhiteSpace(accountName))
+            if (string.IsNullOrWhiteSpace(accountName) || string.IsNullOrWhiteSpace(accountKey) || string.IsNullOrWhiteSpace(connectionString))
             {
                 log.LogError("Invalid storage account information provided.");
                 return;
             }
+
 
             var apiData = await FetchDataFromAPI();
 
@@ -46,24 +47,28 @@ namespace AzureFunction
         private static async Task<string> FetchDataFromAPI()
         {
             using HttpClient httpClient = new HttpClient();
-            var response = await httpClient.GetStringAsync("https://httpbin.org/get");
+            var response = await httpClient.GetStringAsync("https://api.publicapis.org/random?auth=null");
             return response;
         }
 
         private static async Task LogDataToTableStorage(string tableAccountUrl, string accountName, string accountKey, string apiData, ILogger log)
         {
-            var serviceClient = new TableServiceClient(new Uri(tableAccountUrl), new StorageSharedKeyCredential(accountName, accountKey));
+            string connectionString = "DefaultEndpointsProtocol=https;AccountName=jv33;AccountKey=zurohj+fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA+AStWU80+g==;EndpointSuffix=core.windows.net";
+
+
+            var serviceClient = new TableServiceClient(connectionString);
+
 
             var client = serviceClient.GetTableClient("AteaHomework01");
 
             await client.CreateIfNotExistsAsync();
 
-            var entity = new TableEntity("somePartition", "someRowKey")
-    {
-        { "Data", apiData }
-    };
+            var entity = new TableEntity("somePartition", DateTime.UtcNow.Ticks.ToString())
+            {
+                { "Data", apiData }
+            };
 
-            await client.AddEntityAsync(entity);
+            await client.UpsertEntityAsync(entity, TableUpdateMode.Replace);
 
             log.LogInformation($"Logged data: {apiData}");
         }
@@ -71,11 +76,12 @@ namespace AzureFunction
         private static async Task StoreDataToBlobStorage(string blobAccountUrl, string accountName, string accountKey, string apiData, ILogger log)
         {
             var blobServiceClient = new BlobServiceClient(new Uri(blobAccountUrl), new StorageSharedKeyCredential(accountName, accountKey));
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("your-container-name");
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("myblobcontainer");
 
             await containerClient.CreateIfNotExistsAsync();
 
-            string blobName = "your-blob-name";
+            string blobName = $"myblob-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
 
             BlobClient blobClient = containerClient.GetBlobClient(blobName);
 
@@ -86,6 +92,5 @@ namespace AzureFunction
 
             log.LogInformation($"Stored data to blob: {blobName}");
         }
-
     }
 }

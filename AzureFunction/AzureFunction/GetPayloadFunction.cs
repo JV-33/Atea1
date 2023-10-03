@@ -4,7 +4,6 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -19,19 +18,18 @@ namespace AzureFunction
         [FunctionName("GetPayload")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "payload")] HttpRequest req,
-            ILogger log,
-            ExecutionContext context)
+            ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string accountName = "jv33";
-            string accountKey = "zurohj + fNQRNwEx1IjbmTSEBkM3V1F6gS9pjxj3IppVPdDUPxuopbI4IXJeF8RSGS1bmK1ALmixA + AStWU80 + g ==; // replace with your account key";
-            string blobAccountUrl = $"https://{accountName}.blob.core.windows.net";
+            string accountName = Environment.GetEnvironmentVariable("AccountName", EnvironmentVariableTarget.Process);
+            string accountKey = Environment.GetEnvironmentVariable("AccountKey", EnvironmentVariableTarget.Process);
+            string blobAccountUrl = Environment.GetEnvironmentVariable("BlobAccountUrl", EnvironmentVariableTarget.Process);
+
             string blobName = req.Query["blobName"];
-            string containerName = "myblobcontainer"; 
+            string containerName = "myblobcontainer";
 
-
-            if (string.IsNullOrWhiteSpace(accountName) || string.IsNullOrWhiteSpace(accountKey) || string.IsNullOrWhiteSpace(containerName) || string.IsNullOrWhiteSpace(blobName))
+            if (string.IsNullOrWhiteSpace(accountName) || string.IsNullOrWhiteSpace(accountKey) || string.IsNullOrWhiteSpace(blobAccountUrl) || string.IsNullOrWhiteSpace(containerName) || string.IsNullOrWhiteSpace(blobName))
             {
                 log.LogError("Invalid storage account information provided.");
                 return new BadRequestObjectResult("Invalid storage account information provided.");
@@ -55,7 +53,7 @@ namespace AzureFunction
             using var streamReader = new StreamReader(downloadResult.Value.Content);
             string payload = await streamReader.ReadToEndAsync();
 
-            return new OkObjectResult(payload); // Atgriežam patieso payload, nevis vienkārši izvadu
+            return new OkObjectResult(payload);
         }
     }
 }
